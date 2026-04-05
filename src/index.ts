@@ -21,12 +21,13 @@ const callHandler: CallHandler = async (phoneNumber: string) => {
 
 const config: CampaignConfig = {
   customerList: ['+201234567890', '+201112223334', '+201155667788','+201155667777','+201155667766','+201155667755','+201155667744','+201155667733','+201155667722','+201155667711'],
-  startTime: '09:00',
+  startTime: '05:00',
   endTime: '21:00',
   maxConcurrentCalls: 2,
   maxDailyMinutes: 120,
   maxRetries: 2,
   retryDelayMs: 2000,
+  timezone: 'Africa/Cairo' 
 };
 
 const campaign = new Campaign(config, callHandler, clock);

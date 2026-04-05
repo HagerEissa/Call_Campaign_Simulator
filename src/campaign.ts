@@ -18,9 +18,7 @@ export class Campaign implements ICampaign {
     this.config = config;
     this.callHandler = callHandler;
     this.clock = clock;
-
-
-  this.queue = config.customerList.map(phone => ({ phone, retries: 0 }));
+    this.queue = config.customerList.map(phone => ({ phone, retries: 0 }));
   }
   private checkCompletion() {
     if (this.state === 'completed') return;
@@ -39,8 +37,8 @@ export class Campaign implements ICampaign {
     if (this.state !== 'running') return;
 
     // const now = new Date(this.clock.now());
-    const zone = this.config.timezone || 'UTC';
-    const now = DateTime.fromMillis(this.clock.now(), { zone });
+    const zone = this.config.timezone || 'UTC'; 
+    const now = DateTime.fromMillis(this.clock.now(), { zone });//يحوّل الوقت لشكل مفهوم 
 
     const [startHour, startMinute] = this.config.startTime.split(':').map(Number);
     const [endHour, endMinute] = this.config.endTime.split(':').map(Number);
@@ -65,14 +63,14 @@ export class Campaign implements ICampaign {
     if (now < startTime || now >= endTime) {
       console.log('Current time is outside campaign hours, waiting...');
       this.clock.setTimeout(() => {
-    this.runNext();
-  }, 60000);
+            this.runNext();
+        }, 60000);
 
       return;
     }
-const estimatedMinutes = 1; // أو worst case
-
-if (this.dailyMinutesUsed + estimatedMinutes > this.config.maxDailyMinutes) {
+    
+    const estimatedMinutes = 1;
+    if (this.dailyMinutesUsed + estimatedMinutes > this.config.maxDailyMinutes) {
       console.log('Daily limit reached, stopping new calls');
       const nextMidnight = now.plus({ days: 1 }).startOf('day');
       const delay = nextMidnight.toMillis() - now.toMillis();
@@ -100,14 +98,14 @@ if (this.dailyMinutesUsed + estimatedMinutes > this.config.maxDailyMinutes) {
             next.retries++;
             this.pendingRetries++;
             this.clock.setTimeout(() => {
-            //   this.queue.push(next);
-            this.queue.unshift(next);
-              this.pendingRetries--;
-              this.runNext();
+                //   this.queue.push(next);
+                this.queue.unshift(next);
+                this.pendingRetries--;
+                this.runNext();
             }, this.config.retryDelayMs);
           } else this.totalFailed++;
         })
-        .finally(() => {
+        .finally(() => { // سواء نجحت المكالمة أو فشلت، ننقص عدد المكالمات النشطة ونفحص إذا اكتملت الحملة
           this.activeCalls--;
           this.checkCompletion();
           this.runNext();
@@ -118,8 +116,8 @@ if (this.dailyMinutesUsed + estimatedMinutes > this.config.maxDailyMinutes) {
   start(): void {
     this.state = 'running';
     console.log('Campaign started');
-      console.log('Initial queue:', this.queue);
-      this.runNext();
+    console.log('Initial queue:', this.queue);
+    this.runNext();
   }
 
   pause(): void {
@@ -130,15 +128,15 @@ if (this.dailyMinutesUsed + estimatedMinutes > this.config.maxDailyMinutes) {
 
   resume(): void {
     if (this.state === 'completed') {
-    console.log('Cannot resume, campaign already completed');
-    return;
-  }
+        console.log('Cannot resume, campaign already completed');
+        return;
+    }
 
-  if (this.state === 'paused') {
-    this.state = 'running';
-    console.log('Campaign resumed');
-    this.runNext();
-  }
+    if (this.state === 'paused') {
+        this.state = 'running';
+        console.log('Campaign resumed');
+        this.runNext();
+    }
   }
 
   getStatus(): CampaignStatus {
